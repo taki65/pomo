@@ -1,0 +1,13 @@
+opencv-python-headless
+matplotlib
+numpy==1.26.4
+pandas
+mediapipe
+scikit-learn
+fer
+tensorflow
+mtcnn
+pillow==10.2.0
+tensorboard==2.19.0
+moviepy==1.0.3
+streamlit
