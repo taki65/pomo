@@ -50,7 +50,10 @@ if session_time == 25.0:  # 기본값 상태일 때만 표시
             cursor.execute("DELETE FROM sessions")
             conn.commit()
             st.success("Session history has been cleared.")
-            st.experimental_rerun()
+            st.rerun()
+
+        
+
 
 # --- 모델 훈련 (CSV 기반) ---
 @st.cache_resource
