@@ -50,7 +50,7 @@ if session_time == 25.0:  # 기본값 상태일 때만 표시
             cursor.execute("DELETE FROM sessions")
             conn.commit()
             st.success("Session history has been cleared.")
-            st.rerun()
+            st.rerun()  #최신 스트림릿에 맞는 코드로 변경
 
         
 
