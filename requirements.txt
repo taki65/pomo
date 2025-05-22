@@ -11,3 +11,5 @@ pillow==10.2.0
 tensorboard==2.19.0
 moviepy==1.0.3
 streamlit
+psutil
+pywin32
