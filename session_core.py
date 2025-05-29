@@ -6,6 +6,7 @@ from fer import FER
 import mediapipe as mp
 from sklearn.linear_model import LinearRegression
 import os
+import sys
 import matplotlib.pyplot as plt
 
 # --- 감정 인식 ---
@@ -30,7 +31,7 @@ def estimate_attention(frame, landmarks, w, h):
 
 # --- 실시간 감정/집중도 측정 + 시각화 ---
 def analyze_session(duration_minutes=1, output_file='session_data.csv'):
-    cap = cv2.VideoCapture(0, cv2.CAP_AVFOUNDATION)
+    cap = cv2.VideoCapture(0)
     start_time = time.time()
     data = []
     timestamps = []
@@ -38,7 +39,7 @@ def analyze_session(duration_minutes=1, output_file='session_data.csv'):
 
     print(f"세션 시작: {duration_minutes}분 동안 측정 중...")
 
-    while (time.time() - start_time) < duration_minutes * 60:
+    while (time.time() - start_time) < min(duration_minutes * 60,60):
         ret, frame = cap.read()
         if not ret:
             print("웹캠 오류")
@@ -97,7 +98,7 @@ def break_timer(minutes=5):
     print("쉬는 시간 종료!\n")
 
 # --- 회귀모델로 다음 시간 추천 ---
-def train_regression_model(data_path='session_data.csv', all_sessions_path='sessions_all.csv'):
+def train_regression_model(default_time,data_path='session_data.csv', all_sessions_path='sessions_all.csv'):
     df = pd.read_csv(data_path)
     feature_cols = ['angry','disgust','fear','happy','sad','surprise','neutral','attention']
     df_grouped = df[feature_cols].mean().to_frame().T
@@ -122,7 +123,6 @@ def train_regression_model(data_path='session_data.csv', all_sessions_path='sess
     else:
         print("데이터 부족 → 기본값 유지")
         return 25
-
 # --- 사용자에게 다음 시간 입력받기 ---
 def ask_next_duration(default_duration):
     try:
@@ -141,16 +141,15 @@ def ask_next_duration(default_duration):
 # --- 전체 실행 함수 (UI에서 호출할 메인 엔트리) ---
 def run_pomodoro_session(initial_duration=1, break_duration=0.17):
     actual_duration = analyze_session(duration_minutes=initial_duration, output_file='session_data.csv')
-    break_timer(minutes=break_duration)
+   #break_timer(minutes=break_duration)
     
-    recommended_duration = train_regression_model(data_path='session_data.csv')
-    print(f"\n📈 추천된 다음 뽀모도로 시간: {recommended_duration}분")
-
-    # 사용자 입력 반영
-    next_duration = ask_next_duration(recommended_duration)
-    print(f"⏱ 다음 세션 시간: {next_duration}분으로 설정됨.\n")
+    recommended_duration = train_regression_model(initial_duration,data_path='session_data.csv')
+    print(f"\n 추천된 다음 뽀모도로 시간:{recommended_duration}분")
+    # # 사용자 입력 반영
+    # next_duration = ask_next_duration(recommended_duration)
+    # print(f"⏱ 다음 세션 시간: {next_duration}분으로 설정됨.\n")
     
-    return next_duration
+    return recommended_duration
 
 def ask_next_duration(default_duration):
     try:
@@ -159,9 +158,12 @@ def ask_next_duration(default_duration):
             return default_duration
         val = float(user_input)
         if val < 0.5:
-            print("❗ 최소 0.5분 이상 입력해야 합니다.")
+            print(" 최소 0.5분 이상 입력해야 합니다.")
             return default_duration
         return val
     except:
-        print("❗ 잘못된 입력입니다. 기본값으로 진행합니다.")
+        print(" 잘못된 입력입니다. 기본값으로 진행합니다.")
         return default_duration
+args = sys.argv[1:]
+print(args[0],args[1])
+run_pomodoro_session(float(args[0]),float(args[1]))
